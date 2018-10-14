@@ -110,7 +110,7 @@ function  inpsel(a){
 
 function getpos(a) {
     currentrow = $(a).attr("pos");
-    activateAutoComplete($("#product" + currentrow));
+    //activateAutoComplete($("#product" + currentrow));
 }
 
 function printNow() {
@@ -394,7 +394,7 @@ function makecust(a) {
 function printtab() {
     $(".exprem").hide();
     $("#custinfo").text("");
-    $("#billto").replaceWith('<div style = "width:300px;" id = "billto"><select  str = "select" onchange = "selcus($(this));" class="custentry visible form-control my-2" name="customers"></select><input onkeyup = "selcus($(this));" onfocus = "activateAutoComplete($(this))" placeholder = "Customer name" name="cust_name" str = "text" class="custentry custnameget txt notvisible" style="/*width:60%*/" ><input id = "custaddress" class = "mt-1 notvisible" placeholder="address"/><input id = "custphno" class = "mt-1 notvisible" placeholder="phone"/><button class ="btnma btn btn-sm btn-success notvisible ml-2" style="position:absolute; width:50%; " type = "button" onclick = "makecust($(this));">make customer</button></div>');
+    $("#billto").replaceWith('<div style = "width:300px;" id = "billto"><select  str = "select" onchange = "selcus($(this));" class="custentry visible form-control my-2" name="customers"></select><input onkeyup = "selcus($(this));" onfocus = "activateAutoComplete($(this))" placeholder = "Customer name" name="cust_name" str = "text" class="custentry custnameget txt notvisible" style="/*width:60%*/" ><input id = "custaddress" class = "mt-1 notvisible gone" placeholder="address"/><input id = "custphno" class = "mt-1 notvisible gone" placeholder="phone"/><button class ="btnma btn btn-sm btn-success notvisible ml-2 gone" style="position:absolute; width:50%; " type = "button" onclick = "makecust($(this));">make customer</button></div>');
     $("#invoicepaymeth .float-left").html('<select onchange = "selchang($(this))" class="form-control methpay"  name="paymethod" style="font-size:12px;width:120px; margin-right:50px;"><option value="Cash" disabled selected hidden>Choose method</option><option value="Cash">Cash</option><option value="Cheque">Cheque</option><option value="POS">POS</option><option value="Credit">Credit</option></select>');
     $("#invoicepaid .float-left").html('<input type = "number" class = "paidmoney form-control" style="width:120px;"/>');
     $("#invoicebalance .float-left").html("");
