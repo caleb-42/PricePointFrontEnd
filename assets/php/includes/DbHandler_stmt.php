@@ -1,18 +1,27 @@
 <?php
-
 class DbHandler{
     const HOST = "localhost";
     /*const DB = "webplayg_mgxdb";
     const USER = "webplayg_root";
     const PASS = "webplay";*/
-    /* const DB = "pricepoint";
-    const USER = "root";
-    const PASS = "ewere"; */
     const DB = "pricepoint";
     const USER = "root";
-    const PASS = "";
+    const PASS = "ewere";
     public static $con;
 
+    
+    /*
+    ..........keywords.......
+    db
+    table
+    col
+    val
+    qcol
+    qval
+    conj
+    cond
+    
+    */
     
     static function makeConnection($data){
         if(!DbHandler::$con){
@@ -30,7 +39,7 @@ class DbHandler{
         }
         return DbHandler::$con;
     }
-
+    
     static function checkkeys($key, $data){
        
         switch ($key){
@@ -109,6 +118,64 @@ class DbHandler{
             break;
         }
     }
+    
+    static function makeref(&$a){
+        return $a;
+    }
+
+    static function makeRefArr($arr){
+        $type = "";
+        //$arr = array_values($arr);
+        foreach($arr as $q){
+            if(is_string($q)){
+                $type .= "s";
+            }elseif(is_int($q)){
+                $type .= "i";
+            }
+        }
+        array_unshift($arr, $type);
+        return $arr;
+    }
+    
+    static function runQuery($query, $data){
+        $db = DbHandler::makeConnection($data);
+        //$res    = $db->prepare("SELECT * FROM tb WHERE name=? AND age=?");
+        $res    = $db->prepare($query); 
+        $crud = substr($query, 0, 6);
+        $refA = array();
+        switch($crud){
+            case "INSERT":
+                $arr = DbHandler::makeRefArr($data["val"]);
+                break;
+            case "SELECT":
+                if(DbHandler::checkkeys("qcol", $data)){
+                    $arr = DbHandler::makeRefArr($data["qval"]);
+                }else{
+                    $query .= " WHERE ID=?";
+                    $ref    = new ReflectionClass('mysqli_stmt');
+                    $res->execute();
+                    $assoc = array();
+                    if($res){
+                        $data = array();
+                        $dataarr = $res->get_result();
+                        while($row = $dataarr->fetch_assoc()){
+                            array_push($data, $row);
+                        }
+                        $assoc = array('0' => 'output', '1' => 'success',  '2' => 'values have been selected', '3' => $data);
+                    }else{
+                        $assoc = array('0' => 'output', '1' => 'error', '2' => 'sql operation was not carried out');
+                    }
+                    return $assoc;
+                    exit();
+                }
+                break;
+            case "UPDATE":
+                $arr = DbHandler::makeRefArr(array_merge($data["val"], $data["qval"]));
+                break;
+            case "DELETE":
+                $arr = DbHandler::makeRefArr($data["qval"]);
+                break;
+        }
 
         foreach($arr as $y){
             array_push($refA, DbHandler::makeref($y));
@@ -130,11 +197,7 @@ class DbHandler{
                     while($row = $dataarr->fetch_assoc()){
                         array_push($data, $row);
                     }
-                    if(!empty($data)){
-                        $assoc = array('0' => 'output', '1' => 'success',  '2' => 'values have been selected', '3' => $data);
-                    }else{
-                        $assoc = array('0' => 'output', '1' => 'empty',  '2' => 'values where not found', '3' => $data);
-                    }
+                    $assoc = array('0' => 'output', '1' => 'success',  '2' => 'values have been selected', '3' => $data);
                     break;
                 case "UPDATE":
                     $assoc = array('0' => 'output', '1' => 'success',  '2' => 'values have been updated');
@@ -151,9 +214,9 @@ class DbHandler{
     }
     
     static function select_cmd($data = array()){
-        if(is_array($data)){
-            $con = DbHandler::makeConnection($data);
-
+        if(is_array($data)){ //data is an array
+            
+            //make connection with sql database
             
             $adjdata = array();
             $query = "SELECT";
@@ -185,20 +248,15 @@ class DbHandler{
                 if($adjdata){//where conditions exist
                     $query.= "WHERE ";
                     $wcol = $adjdata["qcol"];
-                    $wval = [];
-                    foreach($adjdata["qval"] as $val){
-                        $wval[] = DbHandler::custom_mysql_prep($con, $val);
-                    }
-
                     $wcon = $adjdata["cond"];
                 
-                    $query.= "{$wcol[0]} {$wcon[0]} '{$wval[0]}' ";
+                    $query.= "{$wcol[0]} {$wcon[0]} ? ";
                     
                     $mdata = DbHandler::checkkeys("conj", $adjdata);
                     $wcoj = $mdata["conj"];
                     if($wcoj){//if where conjunction adjust where conjuction array
                         for($col = 1; $col < count($wcol); $col++){
-                            $query.= "{$wcoj[$col - 1]} {$wcol[$col]} {$wcon[$col]} '{$wval[$col]}' ";
+                            $query.= "{$wcoj[$col - 1]} {$wcol[$col]} {$wcon[$col]} ? ";
                            
                         }
                         $adjdata = $mdata;
@@ -210,45 +268,35 @@ class DbHandler{
 
             //echo $query;
             if($adjdata){
-                $assoc = array('0' => 'output', '1' => 'success', '2' => 'values have been inserted');
-            return DbHandler::runQuery($con,$query, $adjdata['table'], $assoc);
+            return DbHandler::runQuery($query, $adjdata);
             }
             /*$assoc = array('0' => 'error', '1' => $query);
             return $assoc;*/
                         //DbHandler::getArrayCol($con,$data['table']);
                         //return DbHandler::runQuery($con,$query, $data['table']);
             
-            
-        }else{
+        }else{//data is not an array
 
         }
     }
-
     static function update_cmd($data = array()){
         if(is_array($data)){
             
+            $adjdata = array();
             $con = DbHandler::makeConnection($data);
 
-            if(array_key_exists('table', $data)){
+            if(DbHandler::checkkeys('table', $data)){ //table keyword was used
                 $query = "UPDATE {$data['table']} SET ";
-            }
-            if(array_key_exists('col', $data) && array_key_exists('val', $data) && array_key_exists('qcol', $data) && array_key_exists('qval', $data)){
+            
+                if(DbHandler::checkkeys('col', $data)){//col keyword was used
 
-                if(array_key_exists('conj', $data)){
-                    if(count($data['conj']) == 1 && count($data['qval']) > 1){
-                        for($i = 1; $i < count($data['qval'])-1; $i++){
-                            $data['conj'][$i] = $data['conj'][0];
-                        }
-                    }
-                }
-                if(is_array($data['col']) && is_array($data['val']) && count($data['col']) ==  count($data['val']) &&is_array($data['qcol']) && is_array($data['qval']) && count($data['qcol']) ==  count($data['qval'])){
-                    /*$where_arr = $data['where'];*/
-                    $columns = $data['col'];
+                    $adjdata = DbHandler::checkkeys("val", $data);
+                    if($adjdata){//f where value adjustments return true
                     
-                    $values = [];
-                    foreach($data['val'] as $val){
-                        $values[] = DbHandler::custom_mysql_prep($con, $val);
-                    }
+                        $adjdata = DbHandler::checkkeys("qcol", $adjdata);
+                        if($adjdata){//if where column adjustments return true
+                            
+                            $condno = count($adjdata['cond']);
 
                             $adjdata = DbHandler::checkkeys("cond", $adjdata);
                             if($adjdata){//if where condition adjustments return true
@@ -282,46 +330,40 @@ class DbHandler{
                                     $adjdata = $mdata;
                                 }
                                 $query .= ");";
-                                //echo $query;
+                                //return $query;
                                 return DbHandler::runQuery($query, $adjdata);
                             }
                         }
+                    
                     }
-                    $query .= ");";
-                        //echo $query;
-                    $assoc = array('0' => 'output', '1' => 'success', '2' => 'values have been inserted');
-                    return DbHandler::runInputQuery($con,$query,$assoc);
-                    }else{
-
-                    }
+                
+                }
+                    //return DbHandler::runInputQuery($con,$query);
             }else{
-                //return DbHandler::runQuery($con,$query);
+
             }
+        }else{
+                //return DbHandler::runQuery($con,$query);
         }
     }
-
-
     static function insert_cmd($data = array()){
         if(is_array($data)){
-            
+
+            $adjdata = array();
             $con = DbHandler::makeConnection($data);
 
-            if(array_key_exists('table', $data)){
+            if(DbHandler::checkkeys('table', $data)){ //table keyword was used
                 $query = "INSERT INTO {$data['table']} ";
-            }else{
-                $assoc = array('0' => 'output', '1' => 'error', '2' => 'no table has been entered');
-                return $assoc;
-            }
-            if(array_key_exists('col', $data) && array_key_exists('val', $data)){
 
-                $value = [];
-                foreach($data['val'] as $val){
-                    $value[] = DbHandler::custom_mysql_prep($con, $val);
-                }
+                if(DbHandler::checkkeys('col', $data)){//col keyword was used
 
-                if(is_array($data['col']) && is_array($data['val']) && count($data['col']) ==  count($data['val'])){
-                    /*$where_arr = $data['where'];*/
-                    $data['col'];
+                    $adjdata = DbHandler::checkkeys("val", $data);
+                    if($adjdata){//f where value adjustments return true
+                                
+                        $columns = $adjdata['col'];
+                                $values = $adjdata['val'];
+
+                        $query.= "({$columns[0]}" ;
 
                         
                         for($num = 1; $num < count($columns); $num++){
@@ -335,32 +377,14 @@ class DbHandler{
                         }
                         
                         $query.= ")" ;
-                        //echo $query;
+                        //return $query;
                         return DbHandler::runQuery($query, $adjdata);
                     }
-                    //$assoc = array('0' => 'output', '1' => $query);
-                    $assoc = array('0' => 'output', '1' => 'success', '2' => 'values have been inserted');
-                    return DbHandler::runInputQuery($con,$query,$assoc);
-                    //return $assoc;
-                }else if(count($data['col']) == 1 && is_array($data['col'])  && $data['col'][0] == 'default' && is_array($data['val'])){
-                    $query.= " VALUES ('" . implode("', '", $value) . "');";
-                    //$assoc = array('0' => 'output', '1' => $query);
-                    $assoc = array('0' => 'output', '1' => 'success', '2' => 'values have been inserted');
-                    return DbHandler::runInputQuery($con,$query,$assoc);
-                    //return $assoc;
-                }else{
-                    $assoc = array('0' => 'output', '1' => 'error', '2' => 'col or val parameters either have wrong datatype or values ');
-                    return $assoc;
                 }
 
-            }else{
-                $assoc = array('0' => 'output', '1' => 'error', '2' => 'database col  parameter is missing or no values have been entered');
-                return $assoc;
             }
         }
     }
-
-    
     static function delete_cmd($data = array()){
         if(is_array($data)){
 
@@ -376,16 +400,10 @@ class DbHandler{
                     if($adjdata){//col keyword was used
                     
                     $wcol = $adjdata['qcol'];
-                    $wval = [];
-
-                    
-                    foreach($adjdata['qval'] as $val){
-                        $wval[] = DbHandler::custom_mysql_prep($con, $val);
-                    }
-
+                    $wval = $adjdata['qval'];
                     $wcon = $adjdata['cond'];
                         
-                        $query .= "WHERE {$wcol[0]} {$wcon[0]} '{$wval[0]}'";
+                        $query .= "WHERE {$wcol[0]} {$wcon[0]} ?";
 
                         $mdata = DbHandler::checkkeys("conj", $adjdata);
                         if($mdata){//if where value adjustments return true
@@ -393,79 +411,18 @@ class DbHandler{
                             $wcoj = $mdata['conj'];
                         
                             for($num = 1; $num < count($wcol); $num++){
-                                $query.= " {$wcoj[$num - 1]} {$wcol[$num]} {$wcon[$num]} '{$wval[0]}'";
+                                $query.= " {$wcoj[$num - 1]} {$wcol[$num]} {$wcon[$num]} ?";
                             }
                             $adjdata = $mdata;
                         }
                         //echo $query;
-                        return DbHandler::runQuery($con ,$query, $adjdata);
+                        return DbHandler::runQuery($query, $adjdata);
                     }
                 }
             }
-        }
     }
-
-    static function runQuery($con, $query, $table, $msg){
-        //$query =  DbHandler::custom_mysql_prep($con,$query);
-        //echo $query;
-        $result_set = mysqli_query($con, $query);
-        //return $result_set;
-        if($result_set){
-            $data = DbHandler::getArray($result_set,$con,$table);
-            //print_r($data);
-            $assoc = array('0' => 'output', '1' => 'success',  '2' => 'values have been selected', '3' => $data);
-            return $assoc;
-        }else{
-            $assoc = array('0' => 'output', '1' => 'error', '2' => 'sql operation was not carried out');
-            return $assoc;
-        }
-    }
-    static function runInputQuery($con, $query, $msg){
-        //echo $query;
-        $result_set = mysqli_query($con, $query);
-        if($result_set){
-            return $msg;
-        }else{
-            $assoc = array('0' => 'output', '1' => 'error', '2' => 'query failed within connection');
-            return $assoc;
-        }
-    }
-
-    static function getArray($result_set, $con, $table){
-        $data = array();
-        if(mysqli_num_rows($result_set) > 0){
-            while($row = mysqli_fetch_array($result_set)){
-                array_push($data, DbHandler::getArrayCol($con, $table, $row));
-            }
-            //print_r($data);
-        }
-        return $data;
-    }
-    static function getArrayCol($con,$table,$row){
-        $result_set = mysqli_query($con, "SHOW COLUMNS FROM {$table}");
-        $data = array();
-        //echo "here";
-        while($col = mysqli_fetch_array($result_set)){
-            //echo($row[0]);
-            $data[$col[0]] = $row[$col[0]];
-        }
-        return $data;
-    }
-
-    static function custom_mysql_prep($con, $value ) {
-        $magic_quotes_active = get_magic_quotes_gpc();
-        $new_enough_php = function_exists( "mysql_real_escape_string" ); // i.e. PHP >= v4.3.0
-        if( $new_enough_php ) { // PHP v4.3.0 or higher
-            // undo any magic quote effects so mysql_real_escape_string can do the work
-            if( $magic_quotes_active ) { $value = stripslashes( $value ); }
-            $value = mysqli_real_escape_string($con,  $value );
-        } else { // before PHP v4.3.0
-            // if magic quotes aren't already on then add slashes manually
-            if( !$magic_quotes_active ) { $value = addslashes( $value ); }
-            // if magic quotes are active, then the slashes already exist
-        }
-        return $value;
-    }
+}
+    
 }
 
 ?>
