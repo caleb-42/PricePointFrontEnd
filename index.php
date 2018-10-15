@@ -133,7 +133,7 @@ $root = "http://localhost/webplay/PricePointFrontEnd/" ?>
                         </thead>
                         <tbody id="candidates" class="cand">
                             <tr class="rowCasing rowCasing1" pos ="1">
-                                <td class="td text-center" onclick="removerow('1')">1</td>
+                                <td class="td sn text-center" onclick="removerow('1')">1</td>
                                 <td class="td text-center"><input type = "number" pos = "1" id="qty1" class="inp quants" orig = "" onclick = "inpsel($(this));"  onkeyup="getTotal($(this))" /></td>
                                 <td class="td text-center"><input pos = "1" id = "product1" class="inp saleproducts " onclick = "inpsel($(this));" str="pro" name = "product_name" onfocus = "getpos($(this))" /></td>
                                 <td class="td exprem"><input onchange = "showqty($(this));"  pos = "1" id = "expdate1"  class="inp expdate" name = "expirydate"/></td>
@@ -338,6 +338,9 @@ $root = "http://localhost/webplay/PricePointFrontEnd/" ?>
                                         }
                                         .table-sm{
                                             padding: 0.3rem;
+                                        }
+                                        .gone{
+                                            display:none;
                                         }
                                         .table-bordered{
                                             border: 1px solid #aaa;

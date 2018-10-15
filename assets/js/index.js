@@ -3,6 +3,7 @@ var qtyhere;
 var values;
 var currentrow;
 var counter = 1;
+var customers = [];
 $(document).ready(function () {
     genInv("get");
     $("#dataToggler").on("click", function (e) {
@@ -127,7 +128,9 @@ function printNow() {
     console.log($(".custentry.visible").val());
 
     if (checkdata()) {
-        collect_sales_info();
+        if(collect_sales_info() == 'stop'){
+            return 0;
+        };
         var str = $("#invoicenum td:nth-child(2)").html();
         //$("#invoicepaymeth select").replaceWith($("#invoicepaymeth select").val());
         str = str.replace('PP', '1');
@@ -206,48 +209,48 @@ function collect_sales_info() {
     paymeth = [];
     paidamt = [];
     outbal = [];
-    $(".saleproducts").each(function (index, element) {
+    $("#used_form .saleproducts").each(function (index, element) {
         if (invoiceno.length < $("#totalno").html()) {
             invoiceno.push($("#invoicenum td:nth-child(2)").html());
         }
     });
-    $(".saleproducts").each(function (index, element) {
+    $("#used_form .saleproducts").each(function (index, element) {
         if (custname.length < $("#totalno").html()) {
             custname.push($(".custentry.visible").val());
         }
     });
-    $(".saleproducts").each(function (index, element) {
+    $("#used_form .saleproducts").each(function (index, element) {
         if (paidamt.length < $("#totalno").html()) {
             paid = $(".paidmoney").val().replace(",","");
             paidamt.push(paid);
         }
     });
-    $(".saleproducts").each(function (index, element) {
+    $("#used_form .saleproducts").each(function (index, element) {
         if (outbal.length < $("#totalno").html()) {
             outbal.push(String(outbalmon));
         }
     });
-    $(".saleproducts").each(function (index, element) {
+    $("#used_form .saleproducts").each(function (index, element) {
         if (totAmt.length < $("#totalno").html()) {
             totAmt.push(($("#totalAmt").text()));
         }
     });
-    $(".pricesystem").each(function (index, element) {
+    $("#used_form .pricesystem").each(function (index, element) {
         if (pricesys.length < $("#totalno").html()) {
             pricesys.push($(element).html());
         }
     });
-    $(".saleproducts").each(function (index, element) {
+    $("#used_form .saleproducts").each(function (index, element) {
         if (salesref.length < $("#totalno").html()) {
             salesref.push(String($(".salesref").attr("nam")));
         }
     });
-    $(".saleproducts").each(function (index, element) {
+    $("#used_form .saleproducts").each(function (index, element) {
         if (salesdate.length < $("#totalno").html()) {
             salesdate.push($("#invoicedate td:nth-child(2)").html());
         }
     });
-    $(".saleproducts").each(function (index, element) {
+    $("#used_form .saleproducts").each(function (index, element) {
         if (paymeth.length < $("#totalno").html()) {
             if ($("#invoicepaymeth select").val()) {
                 paymeth.push($("#invoicepaymeth select").val());
@@ -256,27 +259,27 @@ function collect_sales_info() {
             }
         }
     });
-    $(".saleproducts").each(function (index, element) {
+    $("#used_form .saleproducts").each(function (index, element) {
         if (prod.length < $("#totalno").html()) {
             prod.push($(element).val());
         }
     });
-    $(".quants").each(function (index, element) {
+    $("#used_form .quants").each(function (index, element) {
         if (quants.length < $("#totalno").html()) {
             quants.push($(element).val());
         }
     });
-    $(".expdate").each(function (index, element) {
+    $("#used_form .expdate").each(function (index, element) {
         if (expdate.length < $("#totalno").html()) {
             expdate.push($(element).val());
         }
     });
-    $(".unitprice").each(function (index, element) {
+    $("#used_form .unitprice").each(function (index, element) {
         if (uniprice.length < $("#totalno").html()) {
             uniprice.push($(element).html());
         }
     });
-    $(".totalno").each(function (index, element) {
+    $("#used_form .totalno").each(function (index, element) {
         if (totprice.length < $("#totalno").html()) {
             totprice.push($(element).html());
         }
@@ -314,10 +317,36 @@ function collect_sales_info() {
     console.log(arr);
     data = JSON.stringify(arr);
     url = "./assets/php/savesalesrecord.php?c=" + data;
-    $.get(url, function (resp) {
-        //json = JSON.parse(resp);
-        console.log(resp);
-    });
+    /* var t = "./assets/php/getCust.php?c=every";
+    $.get(t, function (response) { */
+        //var json = "";
+    console.log(customers);
+    if (customers != "") {
+        json = customers;
+        for (var u = 0; u < json.length; u++) {
+            if(json[u].customer_name == custname[0]){
+                $.get(url, function (resp) {
+                    //json = JSON.parse(resp);
+                    console.log(resp);
+                });
+                return;
+            }else if((u == json.length - 1) && json[u].customer_name != custname[0]){
+                if(paidamt[0] == totAmt[0]){
+                    $.get(url, function (resp) {
+                        //json = JSON.parse(resp);
+                        console.log(resp);
+                    });
+                }else{
+                    alert('cash must be paid in full for visitors');
+                    return 'stop';
+                }
+            }
+        }
+        
+    }
+    //});
+
+    
     //console.log(data);
 }
 
@@ -404,6 +433,7 @@ function printtab() {
         //var json = "";
         if (response != "") {
             json = JSON.parse(response);
+            customers = json;
             str = "<option value='' disabled selected hidden>select customer</option>";
             for (var u = 0; u < json.length; u++) {
                 str += '<option " class = "custt" value="' + json[u].customer_name + '">' + json[u].customer_name + '</option>';
@@ -415,9 +445,10 @@ function printtab() {
     $("#togglecusts").css("display", "block");
 
     var printArea = $(".salestable").clone();
-    console.log(printArea);
+    //console.log(printArea);
     $("#InvoiceBody").css("font-size", "12px");
     $("#InvoiceBody").html(printArea);
+    contructTB('#InvoiceBody');
     $("#InvoiceBody .rowCasing" + counter).remove();
     $("#Invoicefooter .amt").html($("#totalAmt").text() + "<br/><br/><br/>" + $("#totalAmt").text());
     /* var t = "./assets/php/getCust.php?outbal=get";
@@ -434,7 +465,34 @@ function printtab() {
      });*/
     /*$("#invoicebalance .float-left").html($("#totalAmt").text());*/
 }
-
+function contructTB(tbP){
+    var sel = $(tbP + ' tbody tr').toArray();
+    console.log(sel);
+    cont = 1;
+    for(var i = 0; i < sel.length; i++){
+        if(!$(sel[i]).hasClass('gut')){
+            item = $(sel[i]).find('.saleproducts').val();
+            pricesys = $(sel[i]).find('.pricesystem').html();
+            $(sel[i]).find('.sn').html(cont);
+            qty = parseInt($(sel[i]).find('.quants').val());
+            tot = parseInt($(sel[i]).find('.totalno').text());
+            for(var k = i + 1; k < sel.length; k++){
+                itm = $(sel[k]).find('.saleproducts').val();
+                psys = $(sel[k]).find('.pricesystem').html();
+                if(itm === item && pricesys === psys){
+                    $(sel[k]).addClass('gut');
+                    qty += parseInt($(sel[k]).find('.quants').val());
+                    tot += parseInt($(sel[k]).find('.totalno').text());
+                    console.log(item);
+                }
+            }
+            $(sel[i]).find('.quants').val(qty);
+            $(sel[i]).find('.totalno').text(tot);
+            cont++;
+        }
+    }
+    $(tbP + ' tbody tr.gut').addClass('gone');
+}
 function genInv(a) {
     console.log("here");
     var t = "./assets/php/invoiceNoGen.php?c=" + String(a);
@@ -599,7 +657,7 @@ function saddtocart() {
         if(counter == currentrow){
             counter += 1;
             var str = "";
-            str += '<tr class="rowCasing' + counter + '" pos = "1"><td class="td text-center" onclick = "removerow(' + counter + ');">' + counter + '</td><td class="td text-center"><input type = "number" pos = "' + counter + '" id="qty' + counter + '" class="inp quants" onclick = "inpsel($(this));" orig = "" onkeyup="getTotal($(this))" onchange="checkstk($(this))"/></td><td class="td text-center"><input pos = "' + counter + '" id = "product' + counter + '" str="pro" onclick = "inpsel($(this));" class="inp saleproducts" onfocus = "getpos($(this))"/></td><td class="td exprem"><input  onchange = "showqty($(this));" value = "" pos = "' + counter + '" id = "expdate' + counter + '" class="inp expdate " name = "expirydate" /></td><td class="td text-center" ><p class ="desp" id="description' + counter + '"></p></td><td pos = "' + counter + '" class="td text-center"  onclick = "altprice($(this));getTotal($(this));"><p pos = "' + counter + '" class = "unitprice" data-price = "" data-pricename = "retail" id="unitprice' + counter + '"></p><div id = "pricesystem' + counter + '" class = "badge-danger pricesystem badge badge-pill" pos ="' + counter + '">wholesale</div></td><td class="td text-center"><p id="totalprice' + counter + '" class="totalno"></p></td></tr>';
+            str += '<tr class="rowCasing' + counter + '" pos = "1"><td class="td sn text-center" onclick = "removerow(' + counter + ');">' + counter + '</td><td class="td text-center"><input type = "number" pos = "' + counter + '" id="qty' + counter + '" class="inp quants" onclick = "inpsel($(this));" orig = "" onkeyup="getTotal($(this))" onchange="//checkstk($(this))"/></td><td class="td text-center"><input pos = "' + counter + '" id = "product' + counter + '" str="pro" onclick = "inpsel($(this));" class="inp saleproducts" onfocus = "getpos($(this))"/></td><td class="td exprem"><input  onchange = "showqty($(this));" value = "" pos = "' + counter + '" id = "expdate' + counter + '" class="inp expdate " name = "expirydate" /></td><td class="td text-center" ><p class ="desp" id="description' + counter + '"></p></td><td pos = "' + counter + '" class="td text-center"  onclick = "altprice($(this));getTotal($(this));"><p pos = "' + counter + '" class = "unitprice" data-price = "" data-pricename = "retail" id="unitprice' + counter + '"></p><div id = "pricesystem' + counter + '" class = "badge-danger pricesystem badge badge-pill" pos ="' + counter + '">wholesale</div></td><td class="td text-center"><p id="totalprice' + counter + '" class="totalno"></p></td></tr>';
 
 
             $('#candidates').append(str);
@@ -731,7 +789,7 @@ function listItemClick(event, ui) {
     if (currentrow == counter) {
         counter += 1;
         var str = "";
-        str += '<tr class="rowCasing' + counter + '" pos = "1"><td class="td text-center" onclick = "removerow(' + counter + ');">' + counter + '</td><td class="td text-center"><input type = "number" pos = "' + counter + '" id="qty' + counter + '" class="inp quants" onclick = "inpsel($(this));" orig = "" onkeyup="getTotal($(this))" onchange="checkstk($(this))"/></td><td class="td text-center"><input pos = "' + counter + '" id = "product' + counter + '" str="pro" onclick = "inpsel($(this));" class="inp saleproducts" onfocus = "getpos($(this))"/></td><td class="td exprem"><input  onchange = "showqty($(this));" value = "" pos = "' + counter + '" id = "expdate' + counter + '" class="inp expdate " name = "expirydate" /></td><td class="td text-center" ><p class ="desp" id="description' + counter + '"></p></td><td pos = "' + counter + '" class="td text-center"  onclick = "altprice($(this));getTotal($(this));"><p pos = "' + counter + '" class = "unitprice" data-price = "" data-pricename = "retail" id="unitprice' + counter + '"></p><div id = "pricesystem' + counter + '" class = "badge-danger pricesystem badge badge-pill" pos ="' + counter + '">wholesale</div></td><td class="td text-center"><p id="totalprice' + counter + '" class="totalno"></p></td></tr>';
+        str += '<tr class="rowCasing' + counter + '" pos = "1"><td class="td sn text-center" onclick = "removerow(' + counter + ');">' + counter + '</td><td class="td text-center"><input type = "number" pos = "' + counter + '" id="qty' + counter + '" class="inp quants" onclick = "inpsel($(this));" orig = "" onkeyup="getTotal($(this))" onchange="//checkstk($(this))"/></td><td class="td text-center"><input pos = "' + counter + '" id = "product' + counter + '" str="pro" onclick = "inpsel($(this));" class="inp saleproducts" onfocus = "getpos($(this))"/></td><td class="td exprem"><input  onchange = "showqty($(this));" value = "" pos = "' + counter + '" id = "expdate' + counter + '" class="inp expdate " name = "expirydate" /></td><td class="td text-center" ><p class ="desp" id="description' + counter + '"></p></td><td pos = "' + counter + '" class="td text-center"  onclick = "altprice($(this));getTotal($(this));"><p pos = "' + counter + '" class = "unitprice" data-price = "" data-pricename = "retail" id="unitprice' + counter + '"></p><div id = "pricesystem' + counter + '" class = "badge-danger pricesystem badge badge-pill" pos ="' + counter + '">wholesale</div></td><td class="td text-center"><p id="totalprice' + counter + '" class="totalno"></p></td></tr>';
 
         
 
