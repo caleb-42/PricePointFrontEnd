@@ -1,15 +1,14 @@
 <?php
+
+
 class DbHandler{
-    const HOST = "localhost";
+    //const HOST = "localhost";
     /*const DB = "webplayg_mgxdb";
     const USER = "webplayg_root";
     const PASS = "webplay";*/
     /* const DB = "pricepoint";
     const USER = "root";
     const PASS = "ewere"; */
-    const DB = "pricepoint";
-    const USER = "root";
-    const PASS = "";
     public static $con;
 
     
@@ -27,12 +26,13 @@ class DbHandler{
     */
     
     static function makeConnection($data){
+        require 'Constants.php';
         if(!DbHandler::$con){
             if(array_key_exists('db', $data)){
                 $db = $data['db'];
-                DbHandler::$con =  new mysqli(DbHandler::HOST, DbHandler::USER, DbHandler::PASS, $db);
+                DbHandler::$con =  new mysqli(HOST, USER, PASS, $db);
             }else{
-                DbHandler::$con = new mysqli(DbHandler::HOST, DbHandler::USER, DbHandler::PASS, DbHandler::DB);
+                DbHandler::$con = new mysqli(HOST, USER, PASS, DB);
             }
             if(!DbHandler::$con) {
                 $assoc = array('0' => 'output', '1' => 'error', '2' => 'connection unsuccessful');

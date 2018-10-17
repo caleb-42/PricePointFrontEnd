@@ -1,5 +1,5 @@
 <?php
-class DbHandler{
+class DbHandler{ 
 
     public static $con;
 

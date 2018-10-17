@@ -23,7 +23,7 @@ $(document).ready(function () {
             console.log(collap);
         }
     });
-
+    $("#dataToggler").trigger('click');
     showProductlist();
 
 
