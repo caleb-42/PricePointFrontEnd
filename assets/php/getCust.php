@@ -20,7 +20,7 @@ switch($_GET["c"]){
         echo json_encode($cust[3]);
         break;
     case "store":
-        $cust = DbHandler::select_cmd(['table' => 'customers', 'qcol' =>['customer_name'], 'qcol' =>[$_GET["nam"]], 'cond' => ["="]]);
+        $cust = DbHandler::select_cmd(['table' => 'customers', 'qcol' =>['customer_name'], 'qval' =>[$_GET["nam"]], 'cond' => ["="]]);
         //print_r($cust);
         if(empty($cust[3])){
             $cust = DbHandler::insert_cmd([

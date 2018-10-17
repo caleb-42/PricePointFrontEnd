@@ -136,7 +136,7 @@ $root = "http://localhost/webplay/PricePointFrontEnd/" ?>
                                 <td class="td sn text-center" onclick="removerow('1')">1</td>
                                 <td class="td text-center"><input type = "number" pos = "1" id="qty1" class="inp quants" orig = "" onclick = "inpsel($(this));"  onkeyup="getTotal($(this))" /></td>
                                 <td class="td text-center"><input pos = "1" id = "product1" class="inp saleproducts " onclick = "inpsel($(this));" str="pro" name = "product_name" onfocus = "getpos($(this))" /></td>
-                                <td class="td exprem"><input onchange = "showqty($(this));"  pos = "1" id = "expdate1"  class="inp expdate" name = "expirydate"/></td>
+                                <td class="td exprem"><input onchange = "showqty($(this));"  pos = "1" id = "expdate1"  class="inp expdate f-13" name = "expirydate"/></td>
                                 <td class="td text-center" ><p id="description1" class = "desp"></p></td>
                                 <td class="td text-center" onclick = "altprice($(this)); getTotal($(this));" pos = "1"><p class = "unitprice" data-price = "" data-pricename = "retail" id="unitprice1" pos = "1"></p ><div id = "pricesystem1" class = "badge-danger pricesystem badge badge-pill" pos = "1">wholesale</div></td>
                                 <td class="td text-center"><p id="totalprice1" class="totalno"></p></td>

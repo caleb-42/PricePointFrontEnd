@@ -19,15 +19,15 @@ $(document).ready(function () {
             /*$('#sidebar').addclass('');*/
         } else {
             var collap = $('#sidebar').css('height');
-            (parseInt(collap) > 70) ? collapseSidebar(): openSidebar();
+            (parseInt(collap) > 70) ? collapseSidebar() : openSidebar();
             console.log(collap);
         }
     });
 
     showProductlist();
 
-    
-    
+
+
     /*
     $(".paidmoney").on("input", function(){
         var clean = this.value.replace(/[*0-9,]/g,"").replace(/(,.*?/, "$1");
@@ -37,7 +37,7 @@ $(document).ready(function () {
         (e.target).select();
         console.log(e.target.id)
     })*/
-    
+
 
     $('.modal').on('hidden.bs.modal', function () {
         $("#InvoiceBody").empty();
@@ -100,12 +100,12 @@ function activateAutoComplete(a) {
 
 }
 
-function selchang(a){
+function selchang(a) {
     console.log("ssd");
     $(a).val() == "Credit" ? $(".paidmoney").val("0").css("visibility", "hidden") : $(".paidmoney").val("").css("visibility", "visible");
 }
 
-function  inpsel(a){
+function inpsel(a) {
     $(a).select();
 }
 
@@ -128,7 +128,7 @@ function printNow() {
     console.log($(".custentry.visible").val());
 
     if (checkdata()) {
-        if(collect_sales_info() == 'stop'){
+        if (collect_sales_info() == 'stop') {
             return 0;
         };
         var str = $("#invoicenum td:nth-child(2)").html();
@@ -145,8 +145,15 @@ function printNow() {
             //console.log(response);
             genInv("get");
         });
+        if($("#togglecusts").text() == 'Choose Customer'){
+            $("#custinfo").html(
+                $('#custphno').val() + "<br/>" + $('#custaddress').val()
+            );
+        }
         location.reload();
         $("#billto").replaceWith("<p id= 'billto' style = 'font-weight: 600;width:300px;'>" + $(".custentry.visible").val() + "</p>");
+        console.log($("#togglecusts").attr('data-val'));
+        
         $("#togglecusts").css("display", "none");
         data = $(".methpay").find(":selected").attr("value");
         console.log(data);
@@ -193,7 +200,7 @@ function checkexpdate() {
 }
 
 function collect_sales_info() {
-    paid = Number($(".paidmoney").val().replace(",",""));
+    paid = Number($(".paidmoney").val().replace(",", ""));
     outbalmon = Number($("#totalAmt").text()) - paid;
     invoiceno = [];
     custname = [];
@@ -221,7 +228,7 @@ function collect_sales_info() {
     });
     $("#used_form .saleproducts").each(function (index, element) {
         if (paidamt.length < $("#totalno").html()) {
-            paid = $(".paidmoney").val().replace(",","");
+            paid = $(".paidmoney").val().replace(",", "");
             paidamt.push(paid);
         }
     });
@@ -319,34 +326,34 @@ function collect_sales_info() {
     url = "./assets/php/savesalesrecord.php?c=" + data;
     /* var t = "./assets/php/getCust.php?c=every";
     $.get(t, function (response) { */
-        //var json = "";
+    //var json = "";
     console.log(customers);
     if (customers != "") {
         json = customers;
         for (var u = 0; u < json.length; u++) {
-            if(json[u].customer_name == custname[0]){
+            if (json[u].customer_name == custname[0]) {
                 $.get(url, function (resp) {
                     //json = JSON.parse(resp);
                     console.log(resp);
                 });
                 return;
-            }else if((u == json.length - 1) && json[u].customer_name != custname[0]){
-                if(paidamt[0] == totAmt[0]){
+            } else if ((u == json.length - 1) && json[u].customer_name != custname[0]) {
+                if (paidamt[0] == totAmt[0]) {
                     $.get(url, function (resp) {
                         //json = JSON.parse(resp);
                         console.log(resp);
                     });
-                }else{
-                    alert('cash must be paid in full for visitors');
+                } else {
+                    alert('payment must equal total cost for visitors');
                     return 'stop';
                 }
             }
         }
-        
+
     }
     //});
 
-    
+
     //console.log(data);
 }
 
@@ -406,13 +413,16 @@ function makecust(a) {
     console.log(cust);
     $.get(url, function (resp) {
         console.log(resp);
-        if(resp == "have already"){
+        if (resp == "have already") {
             alert("customer name already exist");
-        }else{
-           // $(".custnameget").attr("custId", resp);
-            $("#custinfo").html(
+        } else {
+            // $(".custnameget").attr("custId", resp);
+            /* $("#custinfo").html(
                 add + "<br/>" + phn
-            );
+            ); */
+            $('#custphno').val(phn);
+            $('#custaddress').val(add);
+            alert("customer name created");
         }
 
     });
@@ -423,7 +433,7 @@ function makecust(a) {
 function printtab() {
     $(".exprem").hide();
     $("#custinfo").text("");
-    $("#billto").replaceWith('<div style = "width:300px;" id = "billto"><select  str = "select" onchange = "selcus($(this));" class="custentry visible form-control my-2" name="customers"></select><input onkeyup = "selcus($(this));" onfocus = "activateAutoComplete($(this))" placeholder = "Customer name" name="cust_name" str = "text" class="custentry custnameget txt notvisible" style="/*width:60%*/" ><input id = "custaddress" class = "mt-1 notvisible gone" placeholder="address"/><input id = "custphno" class = "mt-1 notvisible gone" placeholder="phone"/><button class ="btnma btn btn-sm btn-success notvisible ml-2 gone" style="position:absolute; width:50%; " type = "button" onclick = "makecust($(this));">make customer</button></div>');
+    $("#billto").replaceWith('<div style = "width:300px;" id = "billto"><select  str = "select" onchange = "selcus($(this));" class="custentry visible form-control my-2" name="customers"></select><input onkeyup = "selcus($(this));" onfocus = "activateAutoComplete($(this))" placeholder = "Customer name" name="cust_name" str = "text" class="custentry custnameget txt notvisible w-50 mr-3 " style="/*width:60%*/" ><input id = "custaddress" class = "mt-1 notvisible w-50 mr-3 " placeholder="address"/><input id = "custphno" class = "mt-1 notvisible w-50 mr-3" placeholder="phone"/><button class ="btnma btn btn-sm btn-success notvisible ml-2 " style="position:absolute; width:50%; " type = "button" onclick = "makecust($(this));">make customer</button></div>');
     $("#invoicepaymeth .float-left").html('<select onchange = "selchang($(this))" class="form-control methpay"  name="paymethod" style="font-size:12px;width:120px; margin-right:50px;"><option value="Cash" disabled selected hidden>Choose method</option><option value="Cash">Cash</option><option value="Cheque">Cheque</option><option value="POS">POS</option><option value="Credit">Credit</option></select>');
     $("#invoicepaid .float-left").html('<input type = "number" class = "paidmoney form-control" style="width:120px;"/>');
     $("#invoicebalance .float-left").html("");
@@ -465,21 +475,21 @@ function printtab() {
      });*/
     /*$("#invoicebalance .float-left").html($("#totalAmt").text());*/
 }
-function contructTB(tbP){
+function contructTB(tbP) {
     var sel = $(tbP + ' tbody tr').toArray();
     console.log(sel);
     cont = 1;
-    for(var i = 0; i < sel.length; i++){
-        if(!$(sel[i]).hasClass('gut')){
+    for (var i = 0; i < sel.length; i++) {
+        if (!$(sel[i]).hasClass('gut')) {
             item = $(sel[i]).find('.saleproducts').val();
             pricesys = $(sel[i]).find('.pricesystem').html();
             $(sel[i]).find('.sn').html(cont);
             qty = parseInt($(sel[i]).find('.quants').val());
             tot = parseInt($(sel[i]).find('.totalno').text());
-            for(var k = i + 1; k < sel.length; k++){
+            for (var k = i + 1; k < sel.length; k++) {
                 itm = $(sel[k]).find('.saleproducts').val();
                 psys = $(sel[k]).find('.pricesystem').html();
-                if(itm === item && pricesys === psys){
+                if (itm === item && pricesys === psys) {
                     $(sel[k]).addClass('gut');
                     qty += parseInt($(sel[k]).find('.quants').val());
                     tot += parseInt($(sel[k]).find('.totalno').text());
@@ -517,24 +527,24 @@ function getTotal(a) {
     pro = $("#product" + currentrow).val();
     exp = $("#expdate" + currentrow).val();
     orig = parseInt($("#qty" + currentrow).attr("orig"));
-    
+
     tot = 0;
     $(".expdate").each(function (index, element) {
         prod = $("#product" + $(element).attr("pos")).val();
         qty = $("#qty" + $(element).attr("pos")).val();
         console.log(prod);
-        if(pro == prod && exp == $(element).val()){
+        if (pro == prod && exp == $(element).val()) {
             tot += parseInt(qty);
         }
     });
     console.log(tot);
     console.log(orig);
-    if(tot > orig){
+    if (tot > orig) {
         alert("dont go above stock for this expirydate");
         $("#qty" + currentrow).val(0);
         return 0;
     }
-    
+
     console.log($(a).attr("pos"));
 
     console.log($("#unitprice" + currentrow).text());
@@ -606,8 +616,8 @@ function getText(w) {
             $.get(url, function (resp) {
                 $("#stock").text(resp);
             });
-            
-            values[a].expiry_date == "0000-00-00" ? $("#expdate").html("<span style='color:#E87070;'>NONE / EXPIRED</span>"): $("#expdate").text(values[a].expiry_date);
+
+            values[a].expiry_date == "0000-00-00" ? $("#expdate").html("<span style='color:#E87070;'>NONE / EXPIRED</span>") : $("#expdate").text(values[a].expiry_date);
             console.log(values[a].product_name);
             console.log(values[a].expiry_date);
             console.log(values[a].product_description);
@@ -622,11 +632,11 @@ function saddtocart() {
     console.log($(".saleproducts").is(":focus"));
     altprice($("#unitprice" + counter), "reset");
     var mprocess = "go";
-    if($("#stock").text() == "0"){
+    if ($("#stock").text() == "0") {
         return 0;
     }
-    
-    
+
+
     for (var a = 0; a < values.length; a++) {
         /*if (values[a].product_name === $("li.actparent").find("h5").text()) {
         $(".expdate").each(function (index, element) {
@@ -643,21 +653,21 @@ function saddtocart() {
         if (values[a].product_name === $("li.actparent").find("h5").text()) {
             $(".rowCasing" + currentrow + " .unitprice").attr("data-price", values[a].product_retailprice);
             $(".rowCasing" + currentrow + " .saleproducts").val(values[a].product_name);
-            $(".rowCasing" + currentrow + " .expdate").val(values[a].expiry_date);
+            $(".rowCasing" + currentrow + " .expdate").val($("#expdate").html());
             $(".rowCasing" + currentrow + " .desp").text(values[a].product_description);
             $(".rowCasing" + currentrow + " .unitprice").text(values[a].product_wholesaleprice);
 
             pro = $("#product" + currentrow).val();
-           
+
             $("#totalprice" + currentrow).text(values[a].product_wholesaleprice * $("#qty" + currentrow).val());
-            
+
             $(".rowCasing" + currentrow + " .quants").attr("orig", $("#stock").text());
-            
+
         }
-        if(counter == currentrow){
+        if (counter == currentrow) {
             counter += 1;
             var str = "";
-            str += '<tr class="rowCasing' + counter + '" pos = "1"><td class="td sn text-center" onclick = "removerow(' + counter + ');">' + counter + '</td><td class="td text-center"><input type = "number" pos = "' + counter + '" id="qty' + counter + '" class="inp quants" onclick = "inpsel($(this));" orig = "" onkeyup="getTotal($(this))" onchange="//checkstk($(this))"/></td><td class="td text-center"><input pos = "' + counter + '" id = "product' + counter + '" str="pro" onclick = "inpsel($(this));" class="inp saleproducts" onfocus = "getpos($(this))"/></td><td class="td exprem"><input  onchange = "showqty($(this));" value = "" pos = "' + counter + '" id = "expdate' + counter + '" class="inp expdate " name = "expirydate" /></td><td class="td text-center" ><p class ="desp" id="description' + counter + '"></p></td><td pos = "' + counter + '" class="td text-center"  onclick = "altprice($(this));getTotal($(this));"><p pos = "' + counter + '" class = "unitprice" data-price = "" data-pricename = "retail" id="unitprice' + counter + '"></p><div id = "pricesystem' + counter + '" class = "badge-danger pricesystem badge badge-pill" pos ="' + counter + '">wholesale</div></td><td class="td text-center"><p id="totalprice' + counter + '" class="totalno"></p></td></tr>';
+            str += '<tr class="rowCasing' + counter + '" pos = "1"><td class="td sn text-center" onclick = "removerow(' + counter + ');">' + counter + '</td><td class="td text-center"><input type = "number" pos = "' + counter + '" id="qty' + counter + '" class="inp quants" onclick = "inpsel($(this));" orig = "" onkeyup="getTotal($(this))" onchange="//checkstk($(this))"/></td><td class="td text-center"><input pos = "' + counter + '" id = "product' + counter + '" str="pro" onclick = "inpsel($(this));" class="inp saleproducts" onfocus = "getpos($(this))"/></td><td class="td exprem"><input  onchange = "showqty($(this));" value = "" pos = "' + counter + '" id = "expdate' + counter + '" class="inp expdate f-13" name = "expirydate" /></td><td class="td text-center" ><p class ="desp" id="description' + counter + '"></p></td><td pos = "' + counter + '" class="td text-center"  onclick = "altprice($(this));getTotal($(this));"><p pos = "' + counter + '" class = "unitprice" data-price = "" data-pricename = "retail" id="unitprice' + counter + '"></p><div id = "pricesystem' + counter + '" class = "badge-danger pricesystem badge badge-pill" pos ="' + counter + '">wholesale</div></td><td class="td text-center"><p id="totalprice' + counter + '" class="totalno"></p></td></tr>';
 
 
             $('#candidates').append(str);
@@ -706,7 +716,7 @@ function showProductlist() {
 function getstock() {
     $("#stock-list .list").empty();
     urlstr = "./assets/php/getstock.php?c=" + $("li.actparent").find("h5").text();
-        $.get(urlstr, function (data, status) {
+    $.get(urlstr, function (data, status) {
         //alert("Data: " + data + "\nStatus: " + status);
         //console.log(data);
 
@@ -718,22 +728,44 @@ function getstock() {
         var options = {
             valueNames: ['expirydate', 'stockremain'],
             // Since there are no elements in the list, this will be used as template.
-            item: '<li class = "mb-4 stock-item"><div style = "color: #333; float:left; width:50%; text-align:left"><h5 class="expirydate text-center"></h5></div><div style = "color: #333; float:right; width:50%;"><h5 class="stockremain text-center"></h5></div></div><div style = "clear:both"></div></li>'
+            item: '<li class = "mb-4 stock-item" onclick = "selectstock($(this))"><div style = "color: #333; float:left; width:50%; text-align:left"><h5 class="expirydate text-center"></h5></div><div style = "color: #333; float:right; width:50%;"><h5 class="stockremain text-center"></h5></div></div><div style = "clear:both"></div></li>'
         };
+
+        today = $.datepicker.formatDate('yy-mm-dd', new Date());
+
+        console.log(today);
 
         val = JSON.parse(data);
 
         console.log(val);
 
         var userList = new List('stock-list', options, val);
-            totstk = 0
-            $(".stockremain").each(function(index,element){
-                totstk += parseInt($(element).text());
-            });
-            $(".totalstk").text(totstk);
+        totstk = 0
+        $(".stockremain").each(function (index, element) {
+            totstk += parseInt($(element).text());
+        });
+        $(".totalstk").text(totstk);
+        listarr = $('.stock-item').toArray();
+        console.log(listarr);
+        listarr.forEach(function(element){
+            exp = $(element).find('.expirydate').text();
+            console.log(exp);
+            if(exp < today){
+                console.log('expire');
+                $(element).addClass('expsig');
+            }else{
+                console.log('usable');
+            }
+        });
+
     });
 }
-
+function selectstock(a){
+    if(!$(a).hasClass('expsig')){
+        $("#expdate").html($(a).find('.expirydate').text());
+        $("#stock").html($(a).find('.stockremain').text());
+    }
+}
 function custItemClick(event, ui) {
     /*$(".custnameget").autocomplete({
         disabled:true
@@ -746,9 +778,11 @@ function custItemClick(event, ui) {
         console.log($(".custt").val());
         for (var t = 0; t < json.length; t++) {
             if (json[t].customer_name == ui.item.label) {
-                $("#custinfo").html(
+                /* $("#custinfo").html(
                     json[t].address + "<br/>" + json[t].customer_phone
-                );
+                ); */
+                $('#custphno').val(json[t].customer_phone);
+                $('#custaddress').val(json[t].address);
             }
         }
 
@@ -760,12 +794,12 @@ function custItemClick(event, ui) {
     console.log(ui.item.label);*/
 }
 
-function actexp(a){
-   /* if($("#product" + a).val() == ""){
-        !hasClass("deactivate") ? $("#expdate"+ a).addClass("deactivate") : null;
-    }else{
-        hasClass("deactivate") ? $("#expdate"+ a).removeClass("deactivate") : null;
-    }*/
+function actexp(a) {
+    /* if($("#product" + a).val() == ""){
+         !hasClass("deactivate") ? $("#expdate"+ a).addClass("deactivate") : null;
+     }else{
+         hasClass("deactivate") ? $("#expdate"+ a).removeClass("deactivate") : null;
+     }*/
 }
 
 function listItemClick(event, ui) {
@@ -789,9 +823,9 @@ function listItemClick(event, ui) {
     if (currentrow == counter) {
         counter += 1;
         var str = "";
-        str += '<tr class="rowCasing' + counter + '" pos = "1"><td class="td sn text-center" onclick = "removerow(' + counter + ');">' + counter + '</td><td class="td text-center"><input type = "number" pos = "' + counter + '" id="qty' + counter + '" class="inp quants" onclick = "inpsel($(this));" orig = "" onkeyup="getTotal($(this))" onchange="//checkstk($(this))"/></td><td class="td text-center"><input pos = "' + counter + '" id = "product' + counter + '" str="pro" onclick = "inpsel($(this));" class="inp saleproducts" onfocus = "getpos($(this))"/></td><td class="td exprem"><input  onchange = "showqty($(this));" value = "" pos = "' + counter + '" id = "expdate' + counter + '" class="inp expdate " name = "expirydate" /></td><td class="td text-center" ><p class ="desp" id="description' + counter + '"></p></td><td pos = "' + counter + '" class="td text-center"  onclick = "altprice($(this));getTotal($(this));"><p pos = "' + counter + '" class = "unitprice" data-price = "" data-pricename = "retail" id="unitprice' + counter + '"></p><div id = "pricesystem' + counter + '" class = "badge-danger pricesystem badge badge-pill" pos ="' + counter + '">wholesale</div></td><td class="td text-center"><p id="totalprice' + counter + '" class="totalno"></p></td></tr>';
+        str += '<tr class="rowCasing' + counter + '" pos = "1"><td class="td sn text-center" onclick = "removerow(' + counter + ');">' + counter + '</td><td class="td text-center"><input type = "number" pos = "' + counter + '" id="qty' + counter + '" class="inp quants" onclick = "inpsel($(this));" orig = "" onkeyup="getTotal($(this))" onchange="//checkstk($(this))"/></td><td class="td text-center"><input pos = "' + counter + '" id = "product' + counter + '" str="pro" onclick = "inpsel($(this));" class="inp saleproducts" onfocus = "getpos($(this))"/></td><td class="td exprem"><input  onchange = "showqty($(this));" value = "" pos = "' + counter + '" id = "expdate' + counter + '" class="inp expdate f-13" name = "expirydate" /></td><td class="td text-center" ><p class ="desp" id="description' + counter + '"></p></td><td pos = "' + counter + '" class="td text-center"  onclick = "altprice($(this));getTotal($(this));"><p pos = "' + counter + '" class = "unitprice" data-price = "" data-pricename = "retail" id="unitprice' + counter + '"></p><div id = "pricesystem' + counter + '" class = "badge-danger pricesystem badge badge-pill" pos ="' + counter + '">wholesale</div></td><td class="td text-center"><p id="totalprice' + counter + '" class="totalno"></p></td></tr>';
 
-        
+
 
         $('#candidates').append(str);
     }
@@ -810,7 +844,7 @@ function removerow(a) {
         $(".unitprice").text("");
         $(".totalno").text("");
     } else {
-        if(counter == a){
+        if (counter == a) {
             counter -= 1;
             $('.rowCasing' + a).remove();
         }
