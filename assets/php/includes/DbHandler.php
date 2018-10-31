@@ -26,7 +26,7 @@ class DbHandler{
     */
     
     static function makeConnection($data){
-        require 'Constants.php';
+        require_once 'Constants.php';
         if(!DbHandler::$con){
             if(array_key_exists('db', $data)){
                 $db = $data['db'];
