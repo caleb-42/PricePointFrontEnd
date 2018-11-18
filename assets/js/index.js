@@ -350,6 +350,16 @@ function collect_sales_info() {
             }
         }
 
+    }else{
+        if (paidamt[0] == totAmt[0]) {
+            $.get(url, function (resp) {
+                //json = JSON.parse(resp);
+                console.log(resp);
+            });
+        }else {
+            alert('payment must equal total cost for visitors');
+            return 'stop';
+        }
     }
     //});
 
